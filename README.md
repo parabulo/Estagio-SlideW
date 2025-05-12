@@ -12,3 +12,8 @@ Sendo seguido pela listagem dos filmes que estão sendo posicionados em Cards, e
 
 E por fim um Footer com novamente o nome da empresa e sua logo. Acompanhado de outras redes da empresa(Facebook, Instagram, etc) e seus documentos legais, como termos de serviço e política de privacidade.
 
+Manter paginação mostrada de fazer pedido de 20 elementos por página, mantendo os 4 primeiros no carrossel e os outros 16 listados pelos cartões.
+
+## Progressão
+#### Dia 1:
+Não muita familiaridade com Flutter, apesar de não ser completamente desconhecido(nunca tive um projeto em flutter realmente completo, e faz mais de 1 ano). Ajuste rápido com a estrutura padrão usada em Flutter observando alguns códigos feito em fóruns da internet procurando por elementos similares(header, footer, ETC) e na própria documentação, prevendo que o talvez o maior problema seja o uso do GET http com a API, priorizei a tentativa da implementação dessa chamada dos dados para a página de listagem dos filmes.

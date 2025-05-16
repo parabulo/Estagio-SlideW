@@ -8,7 +8,7 @@ class ApiService {
     if (response.statusCode == 200){
       return jsonDecode(response.body);
     } else {
-      throw Exception('Falha em carregar dados: ${response.statusCode}');
+      throw Exception('Failed to load data: ${response.statusCode}');
     }
   }
 }

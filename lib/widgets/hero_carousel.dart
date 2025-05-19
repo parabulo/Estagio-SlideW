@@ -17,7 +17,7 @@ class _MovieHeroCarouselState extends State<MovieHeroCarousel> {
   late Timer _timer;
 
   void _nextMovie() {
-    if (mounted) {
+    if (mounted && widget.movies.isNotEmpty) {
       setState(() {
         _currentMovieIndex = (_currentMovieIndex + 1) % widget.movies.length;
       });
@@ -30,7 +30,7 @@ class _MovieHeroCarouselState extends State<MovieHeroCarousel> {
   }
 
   void _previousMovie() {
-    if (mounted) {
+    if (mounted && widget.movies.isNotEmpty) {
       setState(() {
         _currentMovieIndex =
             (_currentMovieIndex - 1 + widget.movies.length) %
@@ -62,6 +62,10 @@ class _MovieHeroCarouselState extends State<MovieHeroCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.movies.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     final currentMovie = widget.movies[_currentMovieIndex];
 
     return SizedBox(
@@ -232,10 +236,12 @@ class _MovieHeroCarouselState extends State<MovieHeroCarousel> {
 
   List<Widget> _buildPageIndicator() {
     List<Widget> indicators = [];
-    for (int i = 0; i < widget.movies.length; i++) {
-      indicators.add(
-        _buildIndicator(i == _currentMovieIndex),
-      );
+    if (widget.movies.isNotEmpty) {
+      for (int i = 0; i < widget.movies.length; i++) {
+        indicators.add(
+          _buildIndicator(i == _currentMovieIndex),
+        );
+      }
     }
     return indicators;
   }
@@ -252,4 +258,3 @@ class _MovieHeroCarouselState extends State<MovieHeroCarousel> {
     );
   }
 }
-

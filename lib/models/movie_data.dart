@@ -1,5 +1,5 @@
 class MovieData{
-  //Manter todos como String e fazer a conversão(se necessário) quando instanciar dados nos Cards
+  
   final String title;
   final String bannerPath;
   final String rating;

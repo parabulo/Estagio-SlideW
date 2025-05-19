@@ -33,6 +33,7 @@ class Footer extends StatelessWidget{
             color: Colors.white,
             height: 45,
             ),
+          //Adicionar alguns redirecionamentos de sites só para permanecer com a "iteratividade"
           Row(
             children: [
               SizedBox(width: 50),

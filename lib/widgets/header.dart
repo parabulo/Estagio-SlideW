@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Header extends StatelessWidget{
-  final ImageProvider pathLogo;
+  final String pathLogo;
   final double sizeLogo;
   final Color backgroundColor;
 
@@ -19,8 +19,8 @@ class Header extends StatelessWidget{
       padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 40),
       child: Row(
         children: [
-          Image(
-            image: pathLogo,
+          Image.asset(
+            pathLogo,
             height: sizeLogo,
           ),
         ],

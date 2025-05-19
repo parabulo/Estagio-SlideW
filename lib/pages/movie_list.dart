@@ -4,6 +4,7 @@ import 'package:slideworks/widgets/movie_card.dart';
 import '../api_service.dart';
 import '../widgets/header.dart';
 import '../widgets/footer.dart';
+import '../widgets/hero_carousel.dart';
 
 class Movielist extends StatefulWidget {
   const Movielist({super.key});
@@ -13,13 +14,12 @@ class Movielist extends StatefulWidget {
 }
 
 class _MovieListState extends State<Movielist> {
-  List<MovieData> _items = [];
+  List<MovieData> _heroMovies = [];
+  List<MovieData> _cardListMovies = [];
   bool _isLoading = false;
   String _error = '';
   int _currentPage = 1;
   int? _maxPage;
-  static const int _moviesPerPage = 10;
-  bool _hasMoreData = true;
   final ScrollController _scrollController = ScrollController();
 
   Future<void> _loadData({int? page}) async {
@@ -40,17 +40,15 @@ class _MovieListState extends State<Movielist> {
 
           setState(() {
             if (page == null || page == 1) {
-              _items = newItems;
+              _heroMovies = newItems.take(4).toList();
+              _cardListMovies = newItems.skip(4).toList();
             } else {
-              _items.addAll(newItems);
+              _cardListMovies.addAll(newItems);
             }
-            if (jsonData.containsKey('max_page')) {
-              _maxPage = jsonData['max_page'];
-              _hasMoreData = _maxPage == null || _currentPage < _maxPage!;
-            } else {
-              if (newItems.length < _moviesPerPage) {
-                _hasMoreData = false;
-              }
+            if (jsonData.containsKey('pagination') &&
+                jsonData['pagination'] is Map<String, dynamic> &&
+                jsonData['pagination'].containsKey('maxPage')) {
+              _maxPage = jsonData['pagination']['maxPage'] as int?;
             }
           });
         } else {
@@ -81,15 +79,16 @@ class _MovieListState extends State<Movielist> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Teste')),
+      backgroundColor: Color(0xFFFCFCFC),
       body: SingleChildScrollView(
         controller: _scrollController,
         child: Column(
           children: [
             const Header(
-              pathLogo: AssetImage('lib/assets/images/logo.png'),
+              pathLogo: 'lib/assets/images/logo.png',
               backgroundColor: Color(0xFFFCFCFC),
             ),
+            MovieHeroCarousel(movies: _heroMovies),
             _buildContent(),
             const Footer(
               pathLogo: 'lib/assets/images/logo_white.png',
@@ -102,7 +101,7 @@ class _MovieListState extends State<Movielist> {
   }
 
   Widget _buildContent() {
-    if (_isLoading && _items.isEmpty) {
+    if (_isLoading && _cardListMovies.isEmpty && _heroMovies.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -115,49 +114,38 @@ class _MovieListState extends State<Movielist> {
       );
     }
 
-    if (_items.isEmpty) {
-      return const Center(
-        child: Text("No movies to show."),
-      );
-    }
-
     List<Widget> pageButtons = [];
 
-    int startPage = (_currentPage - 1 > 0) ? _currentPage - 1 : 1;
-    int endPage = (_maxPage != null && _currentPage + 1 <= _maxPage!)
-        ? _currentPage + 1
-        : (_maxPage != null ? _maxPage! : _currentPage + 1);
+    int startPage = 1;
+    int endPage = 5;
+    if (_maxPage != null) {
+      if (_maxPage! <= 5) {
+        endPage = _maxPage!;
+      } else if (_currentPage <= 3) {
+        endPage = 5;
+      } else if (_currentPage + 2 >= _maxPage!) {
+        startPage = _maxPage! - 4;
+        endPage = _maxPage!;
+      } else {
+        startPage = _currentPage - 2;
+        endPage = _currentPage + 2;
+      }
+    }
 
     for (int i = startPage; i <= endPage; i++) {
-      if (i != _currentPage) {
-        pageButtons.add(
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: ElevatedButton(
-              onPressed: () => _goToPage(i),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[300],
-                foregroundColor: Colors.black,
-              ),
-              child: Text('$i'),
+      pageButtons.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          child: ElevatedButton(
+            onPressed: (i == _currentPage) ? null : () => _goToPage(i),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: (i == _currentPage) ? const Color(0xFF726BEA) : Colors.grey[300],
+              foregroundColor: (i == _currentPage) ? Colors.white : Colors.black,
             ),
+            child: Text('$i'),
           ),
-        );
-      } else {
-        pageButtons.add(
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: ElevatedButton(
-              onPressed: null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF726BEA),
-                foregroundColor: Colors.white,
-              ),
-              child: Text('$i'),
-            ),
-          ),
-        );
-      }
+        ),
+      );
     }
 
     return Center(
@@ -168,7 +156,6 @@ class _MovieListState extends State<Movielist> {
         padding: const EdgeInsets.all(10.0),
         margin: const EdgeInsets.symmetric(vertical: 20.0),
         decoration: BoxDecoration(
-          color: Colors.grey[200],
           borderRadius: BorderRadius.circular(10.0),
         ),
         child: Column(
@@ -177,7 +164,7 @@ class _MovieListState extends State<Movielist> {
               alignment: WrapAlignment.center,
               spacing: 8.0,
               runSpacing: 8.0,
-              children: _items.map((movie) {
+              children: _cardListMovies.map((movie) {
                 return SizedBox(
                   width: 300,
                   child: MovieCard(movie: movie),
@@ -192,15 +179,10 @@ class _MovieListState extends State<Movielist> {
                 children: pageButtons,
               ),
             ),
-            if (_isLoading && _items.isNotEmpty)
+            if (_isLoading && _cardListMovies.isNotEmpty)
               const Padding(
                 padding: EdgeInsets.all(8.0),
                 child: CircularProgressIndicator(),
-              ),
-            if (!_isLoading && !_hasMoreData && _items.isNotEmpty)
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text('No more movies to load.'),
               ),
           ],
         ),
@@ -212,7 +194,8 @@ class _MovieListState extends State<Movielist> {
     if (page > 0 && (_maxPage == null || page <= _maxPage!)) {
       setState(() {
         _currentPage = page;
-        _items.clear();
+        _heroMovies.clear();
+        _cardListMovies.clear();
         _loadData(page: _currentPage);
       });
 
